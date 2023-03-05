@@ -1,26 +1,26 @@
 version: 2.1
 
-# commands:
-#   install_awscli:
-#     description: install_awscli
-#     steps:
-#       - run:
-#           name: Install AWS CLI v2
-#           command: |
-#           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-#           unzip awscliv2.zip
-#           sudo ./aws/install
+commands:
+   install_awscli:
+     description: Install AWS CLI v2
+     steps:
+       - run:
+        name: Install AWS CLI v2
+        command: |
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip awscliv2.zip
+          sudo ./aws/install
 
-#   install_ansible:
-#     description: install_ansible
-#     steps:
-#       - run:
-#           name: Install Ansible v2
-#           command: |
-#           sudo apt update
-#           sudo apt install software-properties-common
-#           sudo add-apt-repository --yes --update ppa:ansible/ansible
-#           sudo apt install ansible
+   install_ansible:
+     description: Install Ansible v2
+     steps:
+       - run:
+        name: Install Ansible v2
+        command: |
+          sudo apt update
+          sudo apt install software-properties-common
+          sudo add-apt-repository --yes --update ppa:ansible/ansible
+          sudo apt install ansible
 
 #   destroy-environment:
 #     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
@@ -142,7 +142,7 @@ jobs:
       - run:
           name: Back-end scan
           command: |
-            cd backend
+           cd backend
             npm install
             npm audit fix --force --audit-level=critical
             npm audit fix --force --audit-level=critical
@@ -152,13 +152,14 @@ jobs:
     docker:
       - image: cimg/base:stable
     steps:
-      -checkout
+      - checkout
+      - install_awscli
       - run:
           name: Ensure back-end infrastructure exists
           command: |
             aws cloudformation deploy \
-              --template-file .circleci/files/backend.yml \
-              --tags project=udapeople \
+             --template-file .circleci/files/backend.yml \
+             --tags project=udapeople \
               --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}" \
               --parameter-overrides ID="${CIRCLE_WORKFLOW_ID:0:7}"
 
@@ -175,7 +176,7 @@ jobs:
           name: Add back-end ip to ansible inventory
           command: |
             BACKEND_PUBLIC_IP=$(aws ec2 describe-instances \
-            —filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:@:7}" \
+            —filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
             —query 'Reservations[*].Instances[*].PublicIpAddress' \
             —output text)
             echo $BACKEND_PUBLIC_IP >> .circleci/ansible/inventory.txt
