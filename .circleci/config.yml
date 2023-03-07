@@ -33,12 +33,11 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack \
-             --stack-name udapeople-backend-<<parameters.WorkFlow_ID>>
-            aws cloudformation delete-stack \
-             --stack-name udapeople-frontend-<<parameters.WorkFlow_ID>>
+            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.WorkFlow_ID>>
+            aws s3 rm s3://udapeople-<<parameters.WorkFlow_ID>> --recursive
+            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.WorkFlow_ID>>
 
-          # aws s3 rm s3://udapeople-<<parameters.WorkFlow_ID>> --recursive
+          
 # destory env commands to remove the stack them empty th bucket bfore remove the fronend stack        
             
    revert-migrations:
@@ -53,7 +52,6 @@ commands:
            when: on_fail
            command: |
             SUCCESS=$(curl --insecure https://kvdb.io/12MQXZo2A8R8MDeTTEGGua/migration_<< parameters.WorkFlow_ID >>)
-            SUCCESS = 1
             if(( $SUCCESS==1 ));
             then
              cd ~/project/backend
@@ -218,7 +216,7 @@ jobs:
      
   run-migrations:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/node:13.8.0
     steps:
       - checkout
       - install_awscli
