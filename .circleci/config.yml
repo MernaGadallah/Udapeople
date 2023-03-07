@@ -255,6 +255,7 @@ jobs:
     steps:
       - checkout
       - install_awscli
+      - install_ansible
       - install_nodejs
       - restore_cache:
           keys: [frontend-build]
@@ -262,7 +263,7 @@ jobs:
           name: Install dependencies
           command: |
             cd frontend
-            npm install
+             npm install
       - run:
           name: Get backend url
           command: |
@@ -276,30 +277,53 @@ jobs:
           name: Deploy frontend objects
           command: |
             cd frontend
-            nmp install
-            npm run build
-            tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
-            aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+             npm run build
+             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
 
       - destroy-environment  #to delete frontend/backend stacks in case of rollback
       - revert-migrations
 
-#   deploy-backend:
-#     docker:
-#       # Docker image here that supports Ansible
-#     steps:
-#       # Checkout code from git
-#       # Add ssh keys with fingerprint
-#       # attach workspace
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Deploy backend
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure
+  # deploy-backend:
+  #   docker:
+  #     - image: cimg/base:stable
+  #   steps:
+  #     - checkout
+  #     - install_awscli
+  #     - install_ansible
+  #     - install_nodejs
+  #     - add_ssh_keys:
+  #         fingerprints: ["6b:a3:c4:79:fe:0e:0f:b7:5c:9f:c0:f0:2e:6f:ea:3a"]
+  #     - attach_workspace:
+  #         at: ~/
+  #     - restore_cache:
+  #         keys: [backend-build]      
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           cd backend
+  #           npm install
+  #     - run:
+  #         name: Deploy package
+  #         command: |
+  #           cd backend
+  #            npm run build
+  #            tar -czf artifact.tar.gz dist/* package*
+  #            cd ..
+  #            cp backend/artifact.tar.gz .circleci/ansible/roles/deploy/files
+  #     - run:
+  #         name: Deploy backend
+  #         command: |
+  #           export TYPEORM_MIGRATIONS_DIR=./migrations
+  #           export TYPEORM_ENTITIES=./modules/domain/**/*.entity{.ts,.js}
+  #           export TYPEORM_MIGRATIONS=./migrations/*.ts
+  #           cd .circleci/ansible
+  #           cat inventory.txt
+  #           ansible-playbook -i inventory.txt deploy-backend.yml      
+
+  #     - destroy-environment  #to delete frontend/backend stacks in case of rollback
+  #     - revert-migrations
+
 
 #   smoke-test:
 #     docker:
