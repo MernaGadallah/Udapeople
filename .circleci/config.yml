@@ -33,29 +33,32 @@ commands:
           name: Destroy environments
           when: on_fail
           command: |
-            aws cloudformation delete-stack --stack-name udapeople-backend-<<parameters.WorkFlow_ID>>
-            aws s3 rm s3://udapeople-<<parameters.WorkFlow_ID>> --recursive
-            aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.WorkFlow_ID>>
-# destory evc commands to remove the stack them empty th bucket bfore remove the fronend stack        
+            aws cloudformation delete-stack \
+             --stack-name udapeople-backend-<<parameters.WorkFlow_ID>>
+            aws cloudformation delete-stack \
+             --stack-name udapeople-frontend-<<parameters.WorkFlow_ID>>
+
+          # aws s3 rm s3://udapeople-<<parameters.WorkFlow_ID>> --recursive
+# destory env commands to remove the stack them empty th bucket bfore remove the fronend stack        
             
-#   revert-migrations:
-#     description: Revert the last migration if successfully run in the current workflow.
-#     parameters:
-#       # Add parameter here
-#     steps:
-#       - run:
-#           name: Revert migrations
-#           # Add when this will run
-#           command: |
-#             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-#             SUCCESS = 1
-#             if(( $SUCCESS==1 ));
-#             then
-#             #  cd ~/project/backend
-#             #  npm install
-#             #  Add revert code here. You can find this in the Getting Started section.
-#               exit 1
-#             fi
+   revert-migrations:
+     description: Revert the last migration if successfully run in the current workflow.
+     parameters:
+      WorkFlow_ID:
+          type: string
+     steps:
+       - run:
+           name: Revert migrations
+           when: on_fail
+           command: |
+            SUCCESS=$(curl --insecure https://kvdb.io/12MQXZo2A8R8MDeTTEGGua/migration_<< parameters.WorkFlow_ID >>)
+            SUCCESS = 1
+            if(( $SUCCESS==1 ));
+            then
+             cd ~/project/backend
+             npm install
+             npm run migration:revert
+            fi
 
 jobs:
   build-frontend:
@@ -197,6 +200,7 @@ jobs:
       - image: cimg/base:stable
     steps:
       - checkout
+      - install_awscli
       - install_ansible
       - add_ssh_keys:
           fingerprints: ["6b:a3:c4:79:fe:0e:0f:b7:5c:9f:c0:f0:2e:6f:ea:3a"]
@@ -211,22 +215,28 @@ jobs:
 
       - destroy-environment  #to delete frontend/backend stacks in case of rollback      
      
-#   run-migrations:
-#     docker:
-#       # Docker image here that supports NodeJS
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Run migrations
-#           command: |
-#             # Your code here
-#             exit 1
-#       - run:
-#           name: Send migration results to memstash
-#           command: |
-#             # Your code here
-#             exit 1
-#      # Here's where you will add some code to rollback on failure
+  run-migrations:
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - install_awscli
+      - run:
+          name: Run migrations
+          command: |
+            cd backend
+            npm install
+            npm run migrations > migrations_dump.txt
+      - run:
+          name: Send migration results to kvdb.io
+          command: |
+            if grep -q "has been executed successfully." ~/project/backend/migrations_dump.txt
+            then
+            curl https://kvdb.io/12MQXZo2A8R8MDeTTEGGua/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+            fi
+
+      - destroy-environment  #to delete frontend/backend stacks in case of rollback
+      - revert-migrations
 
 #   deploy-frontend:
 #     docker:
@@ -342,8 +352,8 @@ workflows:
               only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
-      # - run-migrations:
-      #     requires: [configure-infrastructure]
+      - run-migrations:
+          requires: [configure-infrastructure]
       # - deploy-frontend:
       #     requires: [run-migrations]
       # - deploy-backend:
