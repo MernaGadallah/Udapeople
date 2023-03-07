@@ -1,0 +1,22 @@
+---
+#install node.js - npm - pm2 / uupdtae packages
+
+- name: "upgrade packages."
+  become: true
+  apt:
+    upgrade: yes
+    update_cache: yes
+
+- name: "install nodejs"
+  become: true
+  apt:
+    name: ["nodejs", "npm"]
+    state: latest
+    update_cache: yes
+
+- name: "install pm2 global"
+  become: true
+  npm:
+    name: pm2
+    global: yes
+   
