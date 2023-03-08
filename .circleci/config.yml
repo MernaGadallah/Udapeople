@@ -386,7 +386,7 @@ jobs:
               --stack-name InitialStack
 
       - destroy-environment  #to delete frontend/backend stacks in case of rollback
-      - revert-migrations
+      - revert-migrations    #to revertback
       
   cleanup:
     docker:
