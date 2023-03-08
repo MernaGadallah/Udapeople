@@ -1,2 +1,3 @@
 URL01: https://github.com/MernaGadallah/Udapeople/tree/master
-URL02: https://udapeople-3b786f7.s3.us-west-2.amazonaws.com/index.html
+URL02: http://http://udapeople-3338c07.s3.us-west-2.amazonaws.com/index.html
+URL03: http://d13ri8llue79cr.cloudfront.net
