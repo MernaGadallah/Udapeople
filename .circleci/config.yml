@@ -387,8 +387,8 @@ jobs:
 
       - destroy-environment  #to delete frontend/backend stacks in case of rollback
       - revert-migrations
-
-cleanup:
+      
+  cleanup:
     docker:
        - image: cimg/base:stable
     steps:
