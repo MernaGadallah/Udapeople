@@ -62,7 +62,7 @@ commands:
            when: on_fail
            command: |
             SUCCESS=$(curl --insecure https://kvdb.io/12MQXZo2A8R8MDeTTEGGua/migration_<<parameters.WorkFlow_ID>>)
-            if(( $SUCCESS == "1" ));
+            if(( ${SUCCESS} == 1 ));
             then
              cd ~/project/backend
              npm install
@@ -406,9 +406,9 @@ jobs:
             echo Old Workflow ID is: $OldWorkflowID 
             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
             then
-              aws s3 rm "s3://udapeople-${OldWorkflowID}" --recursive
-              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
-              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+              aws s3 rm s3://udapeople-${OldWorkflowID} --recursive
+              aws cloudformation delete-stack --stack-name udapeople-backend-${OldWorkflowID}
+              aws cloudformation delete-stack --stack-name udapeople-frontend-${OldWorkflowID}
             fi
 
 workflows:
