@@ -48,7 +48,7 @@ commands:
             aws cloudformation delete-stack --stack-name udapeople-frontend-<<parameters.WorkFlow_ID>>
 
           
-# destory env commands to remove the stack them empty th bucket bfore remove the fronend stack        
+# destory env commands to remove the stack them empty th bucket bfore remove the fronend stac      
             
    revert-migrations:
      description: Revert the last migration if successfully run in the current workflow.
