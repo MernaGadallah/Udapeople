@@ -359,7 +359,7 @@ jobs:
               exit 1
             fi
 
-      - destroy-environment  #to delete frontend/backend stacks in case of rollback
+      - destroy-environment  #to delete frontend/backend stacks in case of rollbackk
       - revert-migrations
 
   cloudfront-update:
